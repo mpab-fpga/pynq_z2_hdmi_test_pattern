@@ -1,0 +1,17 @@
+#!/usr/bin/env sh
+
+[ -d "./vitis" ] && echo "directory vitis already exists - skipping firmware project creation" && exit
+
+start=$(date +%s)
+
+mkdir vitis
+cd vitis || exit
+xsct.bat ../create-vitis.tcl
+cd ..
+
+end=$(date +%s)
+elapsed=$((end-start))
+
+echo "========================================"
+echo "firmware project took $elapsed seconds"
+echo "----------------------------------------"

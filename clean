@@ -1,0 +1,22 @@
+#!/usr/bin/env sh
+
+hw() {
+    cd ./hardware || exit
+    ./clean
+    cd ..
+    echo "wiped ./hardware"
+}
+
+fw() {
+    cd ./firmware || exit
+    ./clean
+    cd ..
+    echo "wiped ./firmware"
+}
+
+[ "$1" = "hw" ] && hw && exit
+[ "$1" = "fw" ] && fw && exit
+[ ! $# -eq 0 ] && echo "ERROR: unknown option $1, use hw or fw" && exit
+
+hw
+fw

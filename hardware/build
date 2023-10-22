@@ -1,0 +1,16 @@
+#!/usr/bin/env sh
+
+cd ./vivado || exit
+
+start=$(date +%s)
+
+rm -rf ./*.log
+
+vivado -mode batch -nojournal -source ../create-xsa.tcl
+
+end=$(date +%s)
+elapsed=$((end-start))
+
+echo "========================================"
+echo "hardware build took $elapsed seconds"
+echo "----------------------------------------"

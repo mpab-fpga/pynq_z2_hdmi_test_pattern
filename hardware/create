@@ -1,0 +1,27 @@
+#!/usr/bin/env sh
+
+[ -d "./vivado" ] && echo "directory vivado already exists - skipping hardware project creation" && exit
+
+start=$(date +%s)
+
+rm -rf ./*.log
+
+# TODO - get project name from CD
+# call vivado -mode tcl -source ../create.tcl -tclargs --origin_dir ../ --project_name test
+vivado -mode batch -nojournal -source ./create-vivado.tcl
+
+# these are generated as side-effects
+rm -rf .Xil
+rm -rf NA
+
+cd vivado || exit
+vivado -mode batch -nojournal -source ../add-modules.tcl
+
+vivado -mode batch -nojournal -source ../create-xsa.tcl
+
+end=$(date +%s)
+elapsed=$((end-start))
+
+echo "========================================"
+echo "hardware project took $elapsed seconds"
+echo "----------------------------------------"
