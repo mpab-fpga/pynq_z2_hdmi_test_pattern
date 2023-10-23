@@ -67,15 +67,7 @@ None required
 
 ### Firmware - post-generation fixes
 
-Fix the Boot Image in the system project
-
-- Open a Vitis workspace in ./firmware
-- In Explorer, right click $NAME_app_system-> Create Boot Image
-- We need 3 boot image partitions
-  - (bootloader): ./firmware/\$BOARD_pfm/export/\$BOARD_pfm/sw/\$BOARD_pfm/boot/fsb.elf
-  - bitstream: ./fpga/fpga.runs/impl_1/\*.bit <-- **Important!** Use the fpga project bitstream to ensure changes stay in synch
-  - \$APP.elf: ./firmware/\$APP_app/Debug/\$APP_app.elf
-- -> Create Image
+None required
 
 ## Notes
 

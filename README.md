@@ -22,7 +22,4 @@ cd pynq_z2_hdmi_test_pattern
 
 - generates the Vivado and Vitis projects.
 - generates the bitstream
-- generates the BOOT.bin image\*\*
-
-\*\*But you will need to fix some configuration settings - see [Firmware - post-generation fixes](./docs/docs.md#firmware---post-generation-fixes)  
-You should then be able to program the device and see the test pattern.
+- generates the BOOT.bin image
