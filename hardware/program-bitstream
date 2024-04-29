@@ -1,0 +1,10 @@
+#!/usr/bin/env sh
+cd ./vivado || exit
+start=$(date +%s)
+vivado -mode batch -nojournal -notrace -source ../$0.tcl | grep -E 'ERROR:|WARNING:|INFO:'
+end=$(date +%s)
+elapsed=$((end-start))
+
+echo "============================================="
+echo "$0 took $elapsed seconds"
+echo "---------------------------------------------"

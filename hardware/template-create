@@ -1,0 +1,131 @@
+#!/usr/bin/env bash
+
+# echo with color
+err_echo() {
+	printf  "\e[1m\e[31mERROR: $1\e[0m\n"
+}
+
+wrn_echo() {
+	printf  "\e[1m\e[33mWARNING: $1\e[0m\n"
+}
+
+inf_echo() {
+	printf  "\e[1m\e[30mINFO: $1\e[0m\n"
+}
+
+ok_echo() {
+	printf  "\e[1m\e[32m$1\e[0m\n"
+}
+
+XIL_ENV_ERR=
+[ -z "$(command -v vivado)" ] && err_echo "vivado not found" && XIL_ENV_ERR=1
+[ ! -z "$XIL_ENV_ERR" ] && exit
+
+VIVADO_VERSION=$(vivado -version | grep "vivado v" | sed "s/^.*vivado v//" | sed "s/ (64-bit)//" | sed "s/\r//" | sed "s/\n//")
+case "$VIVADO_VERSION" in
+   "2023.2.1")
+   ;;
+   "2023.2")
+   ;;
+   "2023.1")
+   ;;
+   *) err_echo "unsupported vivado version: $VIVADO_VERSION" && exit
+   ;;
+esac
+ok_echo "hardware template-create using vivado version: $VIVADO_VERSION"
+
+# comments and blank lines are permitted in the manifest
+copy_manifest_if () {
+inf_echo " using manifest file: $1"
+if [ -f "$1" ]; then
+	while read -r LINE || [ -n "$LINE" ]; do
+		[[ $LINE = \#* ]]  && continue
+		[ "$LINE" = "" ]  && continue
+		if [ -f "$2/$LINE" ]; then
+			cp "$2/$LINE" "$3"
+			inf_echo " $LINE" copied
+		else
+			FILENAME="${LINE##*/}"
+			if [ -f "$3/$FILENAME" ]; then 
+				wrn_echo " manifest source $2/$LINE not found, but destination $3/$FILENAME exists"
+			else
+				err_echo " manifest source $2/$LINE not found"
+			fi
+		fi
+	done < "$1"
+else
+	wrn_echo " manifest file $1 not found"
+fi
+}
+
+copy_manifest_if "./src/manifest" "./libs/." ./src/.
+copy_manifest_if "../verilator/manifest" "./libs/verilator/." ../verilator/.
+
+# NB: awk b0rkened on macos
+# does not support processing of multi-line sources
+# so there's a double substitution done
+# all newlines = @@NL@@
+# then the output files are re-processed by sed to insert newlines
+# also sed on macos doesn't like sed -i
+# hence sed -i -- ...
+
+cd ./src || exit
+CHECK_FILES=''
+GET_FILES=''
+while read -r FILE; do
+	ns='    "[file normalize "$origin_dir/src/'$FILE'"]"\\'
+	CHECK_FILES=$CHECK_FILES$ns$'@@NL@@'
+	ns='  [file normalize "${origin_dir}/src/'"$FILE"'"] \\'
+	GET_FILES=$GET_FILES$ns$'@@NL@@'
+done < <(find . -maxdepth 1 -name "*.v" -o -name "*.sv" -o -name "*.mem" -type f)
+ns='    "[file normalize "$origin_dir/constraints/constraints.xdc"]"\\'
+CHECK_FILES=$CHECK_FILES$ns
+
+READ_HDL=''
+while read -r FILE; do
+	ns='read_verilog -sv [file normalize "${src_dir}/'$FILE'"]'
+	READ_HDL=$READ_HDL$ns$'@@NL@@'
+done < <(find . -maxdepth 1 -name "*.v" -o -name "*.sv" -type f)
+
+READ_MEM=''
+while read -r FILE; do
+	ns='read_mem [file normalize "${src_dir}/'$FILE'"]'
+	READ_MEM=$READ_MEM$ns$'@@NL@@'
+done < <(find . -maxdepth 1 -name "*.mem" -type f)
+cd ..
+
+complete_template_generation () {
+	sed -i.tmp "s/@@NL@@/\n/g" "$2"
+	rm -f "$2.tmp"
+	[ ! -f "$TARGET_NAME" ] && err_echo "template generation: $1 => $2 - $2 not found"
+	[ -f "$TARGET_NAME" ] && ok_echo "template generation: $1 => $2"
+}
+
+TEMPLATE_NAME="$0-vivado.tcl"
+[ ! -f "$TEMPLATE_NAME" ] && err_echo "$TEMPLATE_NAME not found" && exit
+TARGET_NAME=${TEMPLATE_NAME//template-/}
+rm -f "$TARGET_NAME"
+cat "$TEMPLATE_NAME" \
+| awk -v r="$CHECK_FILES" '{gsub(/@@CHECK_REQUIRED_FILES@@/,r)}1' \
+| awk -v r="$GET_FILES" '{gsub(/@@GET_REQUIRED_FILES@@/,r)}1' \
+> "$TARGET_NAME"
+complete_template_generation "$TEMPLATE_NAME" "$TARGET_NAME"
+
+TEMPLATE_NAME="template-create-design_1.tcl"
+[ ! -f "$TEMPLATE_NAME" ] && err_echo "$TEMPLATE_NAME not found" && exit
+TARGET_NAME=${TEMPLATE_NAME//template-/}
+rm -f "$TARGET_NAME"
+cat "$TEMPLATE_NAME" \
+| awk -v r="$VIVADO_VERSION" '{gsub(/@@VIVADO_VERSION@@/,r)}1' \
+> "$TARGET_NAME"
+complete_template_generation "$TEMPLATE_NAME" "$TARGET_NAME"
+
+TEMPLATE_NAME="$0-bitstream.tcl"
+[ ! -f "$TEMPLATE_NAME" ] && err_echo "$TEMPLATE_NAME not found" && exit
+TARGET_NAME=${TEMPLATE_NAME//template-/}
+rm -f "$TARGET_NAME"
+cat "$TEMPLATE_NAME" \
+| awk -v r="$READ_HDL" '{gsub(/#@@READ_HDL@@/,r)}1' \
+| awk -v r="$READ_MEM" '{gsub(/#@@READ_MEM@@/,r)}1' \
+> "$TARGET_NAME"
+complete_template_generation "$TEMPLATE_NAME" "$TARGET_NAME"

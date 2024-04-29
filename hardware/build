@@ -1,16 +1,43 @@
 #!/usr/bin/env sh
 
+# echo with color
+err_echo() {
+	printf  "\e[1m\e[31mERROR: $1\e[0m\n"
+}
+
+wrn_echo() {
+	printf  "\e[1m\e[33mWARNING: $1\e[0m\n"
+}
+
+inf_echo() {
+	printf  "\e[1m\e[30mINFO: $1\e[0m\n"
+}
+
+ok_echo() {
+	printf  "\e[1m\e[32m$1\e[0m\n"
+}
+
+XIL_ENV_ERR=
+[ -z "$(command -v vivado)" ] && err_echo "vivado not found" && XIL_ENV_ERR=1
+[ ! -z "$XIL_ENV_ERR" ] && exit
+
+# check version against version file and warn/halt on mismatch
+VIVADO_VERSION=$(vivado -version | grep "vivado v" | sed "s/^.*vivado v//" | sed "s/ (64-bit)//" | sed "s/\r//" | sed "s/\n//")
+FILE_VIVADO_VERSION="$(cat ./vivado_version.txt)"
+[ "$FILE_VIVADO_VERSION" != "$VIVADO_VERSION" ] && err_echo " hardware scripts created using $FILE_VIVADO_VERSION, but environment is $VIVADO_VERSION" && exit
+ok_echo "$0 - $VIVADO_VERSION"
+
 cd ./vivado || exit
 
 start=$(date +%s)
 
 rm -rf ./*.log
 
-vivado -mode batch -nojournal -source ../create-xsa.tcl
+vivado -mode batch -nojournal -notrace -source ../build-vivado.tcl | grep -E 'ERROR:|WARNING:|INFO:'
 
 end=$(date +%s)
 elapsed=$((end-start))
 
-echo "========================================"
-echo "hardware build took $elapsed seconds"
-echo "----------------------------------------"
+inf_echo "============================================"
+inf_echo "build hardware project took $elapsed seconds"
+inf_echo "--------------------------------------------"

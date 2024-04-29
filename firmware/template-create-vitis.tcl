@@ -14,7 +14,7 @@ set BOARD "pynq_z2"
 set PLATFORM ${BOARD}_pfm
 set APP ${PROJECT_NAME}_app
 set SYS ${APP}_system
-set XILFFS_VER 5.1
+set XILFFS_VER @@XILFFS_VERSION@@
 
 # set the workspace location
 setws ./

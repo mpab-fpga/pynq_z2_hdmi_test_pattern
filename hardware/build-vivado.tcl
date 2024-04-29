@@ -1,6 +1,12 @@
 open_project vivado
 
+# Ensure source/module changes are integrated
+set ip_list [get_ips]
+puts $ip_list
+update_module_reference $ip_list
+
 # Run Synthesis
+reset_run synth_1
 launch_runs synth_1 -jobs 4
 wait_on_run synth_1
 

@@ -1,0 +1,8 @@
+# comments and blank lines are permitted
+
+video/HDMI_encoder.sv
+video/TMDS_encoder.sv
+video/VIDEO_frame_gen.sv
+video/VIDEO_sig_gen.sv
+video/VIDEO_source.sv
+video/VIDEO_sync.sv

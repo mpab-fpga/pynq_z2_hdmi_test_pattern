@@ -9,9 +9,6 @@
 
 ```code
 $project/
-build
-clean
-create
 |-firmware/
   |-src/*.c
   |-vitis/ (generated, not checked-in)
@@ -36,24 +33,30 @@ create
 ```sh
 > git clone ...
 ```
+### Post checkout - Run the simulation
+
+```sh
+cd $PROJECT
+cd verilator
+./run
+```
 
 ### Post checkout - Generate the fpga and firmware project files
 
-- Windows: open a command prompt in the project root
-
-  ```cmd
-  >create.bat
-  ```
-
 - Windows Git Bash: open a shell prompt in the project root
-
-- Linux: not yet tested
+- Linux: open a shell prompt in the project root
 
 ```sh
-  > ./create
+cd $PROJECT
+cd hardware
+./create
+./build
+cd ../firmware
+./create
+./build
 ```
 
-**Note:** The above script
+**Note:** The above steps
 
 1. Creates a Vivado project
 2. Generates hardware specifications for the FPGA and exports an xsa file
@@ -72,10 +75,6 @@ None required
 ## Notes
 
 The Firmware project supports creating a BOOT.bin image to run standalone off of an SD card
-
-The TUL PYNQ-Z2 board file is included to make this project as self-contained as possible
-
-<https://dpoauwgwqsy2x.cloudfront.net/Download/pynq-z2.zip>
 
 ## FPGA Project
 

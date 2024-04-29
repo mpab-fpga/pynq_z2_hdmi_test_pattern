@@ -1,0 +1,44 @@
+#!/usr/bin/env sh
+
+# echo with color
+err_echo() {
+	printf  "\e[1m\e[31mERROR: $1\e[0m\n"
+}
+
+wrn_echo() {
+	printf  "\e[1m\e[33mWARNING: $1\e[0m\n"
+}
+
+inf_echo() {
+	printf  "\e[1m\e[30mINFO: $1\e[0m\n"
+}
+
+ok_echo() {
+	printf  "\e[1m\e[32m$1\e[0m\n"
+}
+
+XIL_ENV_ERR=
+[ -z "$(command -v vivado)" ] && err_echo "vivado not found" && XIL_ENV_ERR=1
+[ -z "$(command -v vitis-run)" ] && err_echo "vitis-run not found" && XIL_ENV_ERR=1
+[ ! -z "$XIL_ENV_ERR" ] && exit
+
+hw() {
+    cd ./hardware || exit
+    ./$0
+    cd ..
+}
+
+fw() {
+    cd ./firmware || exit
+    ./$0
+    cd ..
+}
+
+hw
+fw
+
+# generate version files
+VIVADO_VERSION=$(vivado -version | grep "vivado v" | sed "s/^.*vivado v//" | sed "s/ (64-bit)//" | sed "s/\r//" | sed "s/\n//")
+echo $VIVADO_VERSION > ./hardware/vivado_version.txt
+VITIS_VERSION=$(vitis-run --version | grep "vitis-run v" | sed "s/^.*vitis-run v//" | sed "s/ (64-bit)//" | sed "s/\r//" | sed "s/\n//")
+echo $VITIS_VERSION > ./firmware/vitis_version.txt

@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+
+# echo with color
+err_echo() {
+	printf  "\e[1m\e[31mERROR: $1\e[0m\n"
+}
+
+wrn_echo() {
+	printf  "\e[1m\e[33mWARNING: $1\e[0m\n"
+}
+
+inf_echo() {
+	printf  "\e[1m\e[30mINFO: $1\e[0m\n"
+}
+
+ok_echo() {
+	printf  "\e[1m\e[32m$1\e[0m\n"
+}
+
+XIL_ENV_ERR=
+[ -z "$(command -v vitis-run)" ] && err_echo "vitis-run not found" && XIL_ENV_ERR=1
+[ ! -z "$XIL_ENV_ERR" ] && exit
+
+VITIS_VERSION=$(vitis-run --version | grep "vitis-run v" | sed "s/^.*vitis-run v//" | sed "s/ (64-bit)//" | sed "s/\r//" | sed "s/\n//")
+case "$VITIS_VERSION" in
+   "2023.2.1") XILFFS_VERSION=5.1
+   ;;
+   "2023.2") XILFFS_VERSION=5.1
+   ;;
+   "2023.1") XILFFS_VERSION=5.0
+   ;;
+   *) err_echo "unsupported vitis version: $VITIS_VERSION" && exit
+   ;;
+esac
+ok_echo "firmware template-create using vitis version: $VITIS_VERSION"
+
+complete_template_generation () {
+	[ ! -f "$TARGET_NAME" ] && err_echo "template generation: $1 => $2 - $2 not found"
+	[ -f "$TARGET_NAME" ] && ok_echo "template generation: $1 => $2"
+}
+
+TEMPLATE_NAME="$0-vitis.tcl"
+[ ! -f "$TEMPLATE_NAME" ] && err_echo "$TEMPLATE_NAME not found" && exit
+TARGET_NAME=${TEMPLATE_NAME//template-/}
+rm -f "$TARGET_NAME"
+# NB: awk b0rkened on macos
+cat "$TEMPLATE_NAME" \
+| awk -v r="$XILFFS_VERSION" '{gsub(/@@XILFFS_VERSION@@/,r)}1' \
+> "$TARGET_NAME"
+complete_template_generation "$TEMPLATE_NAME" "$TARGET_NAME"

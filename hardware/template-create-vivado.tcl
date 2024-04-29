@@ -14,15 +14,7 @@
 proc checkRequiredFiles { origin_dir} {
   set status true
   set files [list \
-    "[file normalize "$origin_dir/src/./HDMI_encoder.sv"]"\
-    "[file normalize "$origin_dir/src/./TMDS_encoder.sv"]"\
-    "[file normalize "$origin_dir/src/./top_HDMI.sv"]"\
-    "[file normalize "$origin_dir/src/./top_HDMI_.v"]"\
-    "[file normalize "$origin_dir/src/./VIDEO_frame_gen.sv"]"\
-    "[file normalize "$origin_dir/src/./VIDEO_sig_gen.sv"]"\
-    "[file normalize "$origin_dir/src/./VIDEO_source.sv"]"\
-    "[file normalize "$origin_dir/src/./VIDEO_sync.sv"]"\
-    "[file normalize "$origin_dir/constraints/constraints.xdc"]"\
+@@CHECK_REQUIRED_FILES@@
   ]
 foreach ifile $files {
   if { ![file isfile $ifile] } {
@@ -148,15 +140,7 @@ set obj [get_filesets sources_1]
 
 # Import local files from the original project
 set files [list \
-  [file normalize "${origin_dir}/src/./HDMI_encoder.sv"] \
-  [file normalize "${origin_dir}/src/./TMDS_encoder.sv"] \
-  [file normalize "${origin_dir}/src/./top_HDMI.sv"] \
-  [file normalize "${origin_dir}/src/./top_HDMI_.v"] \
-  [file normalize "${origin_dir}/src/./VIDEO_frame_gen.sv"] \
-  [file normalize "${origin_dir}/src/./VIDEO_sig_gen.sv"] \
-  [file normalize "${origin_dir}/src/./VIDEO_source.sv"] \
-  [file normalize "${origin_dir}/src/./VIDEO_sync.sv"] \
-]
+@@GET_REQUIRED_FILES@@]
 add_files -norecurse -fileset $obj $files
 set imported_files [import_files -fileset sources_1 $files]
 

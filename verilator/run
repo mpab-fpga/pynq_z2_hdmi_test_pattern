@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+make clean
+make
+cd ../hardware/src
+[ -f ../../verilator/obj_dir/sim_sdl ] && ../../verilator/obj_dir/sim_sdl && exit
+[ -f ../../verilator/obj_dir/sim_sdl.exe ] && ../../verilator/obj_dir/sim_sdl.exe && exit
