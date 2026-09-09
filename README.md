@@ -1,5 +1,7 @@
 # PYNQ-Z2 FPGA and firmware project
 
+Moved/Replaced by <https://github.com/mpab/fpga_hdmi_test_pattern>
+
 Built using the Xilinx toolchain/toolsuite.  
 Should also be portable to other ZYNQ XC7Z020 compatible boards.
 
